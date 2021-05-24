@@ -1,13 +1,16 @@
 import React, { useContext } from "react";
-import { useHistory } from "react-router-dom";
-import { Form, Input, Button } from "antd";
-import { logoutFromFirebase, updateUserInfo } from "../actions";
+import { Link, useHistory } from "react-router-dom";
+import { Form, Input, Button, Spin } from "antd";
+import { logoutFromFirebase, updateUserInfo, getOrderId } from "../actions";
 import { StoreContext } from "../store";
+import { LoadingOutlined } from "@ant-design/icons";
+
 
 const ProfileCard = () => {
   const {
     state: {
       userSignin: { userInfo },
+      orderDetailByUid: { loading , order , tapOrNot}
     },
     dispatch,
   } = useContext(StoreContext);
@@ -24,7 +27,13 @@ const ProfileCard = () => {
     logoutFromFirebase(dispatch);
     history.push("/");
   };
+  const checkOrderList = () => {
+    console.log(order);
+    getOrderId(dispatch);
+  };
+  const antIcon = <LoadingOutlined style={{ fontSize:80, color:"#8183FF"}} spin/>
   return (
+    <div>
     <Form
       onFinish={handleUpdate}
       name="normal_login"
@@ -106,7 +115,7 @@ const ProfileCard = () => {
       <Button
           type="dashed"
           className="login-form__button"
-          onClick={handleLogout}
+          onClick={checkOrderList}
         >
           Check out your order list
         </Button>
@@ -130,6 +139,40 @@ const ProfileCard = () => {
         </Button>
       </Form.Item>
     </Form>
+    <div>
+     { tapOrNot?( loading 
+      ? (
+        <div>
+          <Spin indicator={antIcon} className="spinner" />
+        </div>
+      ) : (
+        order.length===0?(
+          <div>
+            <p>None</p>
+          </div>
+        ):(
+          order.map( order=>{
+            return(
+              <Link to={`/order/${order.id}`}>
+                <Button
+                  type="dashed"
+                  style={{ margin: "3rem" }}
+                  ghost
+                >
+                  Order Id: {order.id}
+                </Button>
+              </Link>
+            )
+          })
+        )
+      )
+      ):(<div></div>)}
+
+    </div>
+    
+
+  </div>
+    
   );
 };
 export default ProfileCard;
